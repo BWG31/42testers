@@ -8,9 +8,9 @@ CC		=	gcc
 
 CFLAGS	=	-Wall -Wextra -Werror
 
-INC_DIR	=	../
+INC_DIR	=	../../
 
-LIB		=	../libft.a
+LIB		=	../../libft.a
 
 RM		=	rm -f
 
