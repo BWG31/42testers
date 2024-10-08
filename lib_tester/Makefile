@@ -8,9 +8,9 @@ CC		=	gcc
 
 CFLAGS	=	-Wall -Wextra -Werror
 
-INC_DIR	=	~/Projects/Cursus/libft
+INC_DIR	=	..
 
-LIB		=	libft.a
+LIB		=	../libft.a
 
 RM		=	rm -f
 
@@ -21,15 +21,14 @@ ${NAME}:	${LIB} ${OBJS}
 
 ${LIB}:		
 			make -C ${INC_DIR}
-			cp ${INC_DIR}/${LIB} .
-			cp ${INC_DIR}/libft.h .
-			make -C ${INC_DIR} fclean
 
 clean:
 			${RM} ${OBJS}
+			make -C ${INC_DIR} clean
 
 fclean:		clean
-			${RM} ${NAME} ${LIB} libft.h
+			${RM} ${NAME}
+			make -C ${INC_DIR} fclean
 
 re:			fclean all
 
