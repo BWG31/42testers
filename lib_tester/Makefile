@@ -8,7 +8,7 @@ CC		=	gcc
 
 CFLAGS	=	-Wall -Wextra -Werror
 
-INC_DIR	=	..
+INC_DIR	=	../
 
 LIB		=	../libft.a
 
@@ -18,6 +18,10 @@ all:		${NAME}
 
 ${NAME}:	${LIB} ${OBJS}
 			${CC} ${CFLAGS} $^ ${LIB} -o $@
+
+%.o:		%.c
+			echo hello
+			$(CC) $(CFLAGS) -I$(INC_DIR) -c $^ -o $@
 
 ${LIB}:		
 			make -C ${INC_DIR}
