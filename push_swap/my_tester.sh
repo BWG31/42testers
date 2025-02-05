@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# LINUX ONLY!!!
+
+RED="\033[0;31m"
+LRED="\033[0;91m"
+LGREEN="\033[0;92m"
+LYELLOW="\033[0;93m"
+RESET="\033[0m"
+
 if [ ! $# -eq 3 ]
 	then
 	echo "Usage: ./my_tester.sh <push_swap executable> <number of tests> <number of elements>"
@@ -49,12 +57,12 @@ echo ""
 
 sort -n $RAW | cat > $RESULTS
 
-echo -e "Best:\\t" $(head -n 1 $RESULTS)
-echo -e "Avg:\\t" $( expr $total / $(expr $numberoftests - $already_sorted))
-echo -e "Worst:\\t" $(tail -n 1 $RESULTS)
+echo -e "Best:\\t" $LGREEN $(head -n 1 $RESULTS) $RESET
+echo -e "Avg:\\t" $LYELLOW $( expr $total / $(expr $numberoftests - $already_sorted)) $RESET
+echo -e "Worst:\\t" $LRED $(tail -n 1 $RESULTS) $RESET
 
 rm -rf $TMPDIR
 
 if [ $ko_count -gt 0 ]; then
-	echo -e "KO:\\t $ko_count/$numberoftests\\tSee $KO_FILE for details"
+	echo -e $RED"KO:$RESET\\t $ko_count/$numberoftests\\tSee $KO_FILE for details"
 fi
