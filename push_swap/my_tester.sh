@@ -1,23 +1,34 @@
 #!/bin/bash
 
-if [ ! $# -eq 2 ]
+if [ ! $# -eq 3 ]
 	then
-	echo "Use: ./my_tester.sh <number of tests> <number of elements>"
+	echo "Usage: ./my_tester.sh <push_swap executable> <number of tests> <number of elements>"
 	exit 1
 fi
 
-declare -i numberoftests=$1
-ELEMS=$2
+EXECUTABLE=$1
+declare -i numberoftests=$2
+declare -i testnumber=1
+declare -i total=0
+declare -i already_sorted=0
+ELEMS=$3
 RAW="raw_results"
 RESULTS="results.txt"
 
 echo Running $numberoftests tests for $ELEMS elements.
 
-while [[ $? -eq 0 && $numberoftests -gt 0 ]]; do
+while [[ $? -eq 0 && $testnumber -le $numberoftests ]]; do
+	echo -en "\r$testnumber/$numberoftests"
+	declare -i count
 	ARG=$(shuf -i 0-10000 -n $ELEMS | tr '\n' ' ')
-	./push_swap $ARG | wc -l >> $RAW
-	numberoftests=$((numberoftests - 1))
-	echo -en "\rTests remaining : " $numberoftests
+	count=$(./$EXECUTABLE $ARG | wc -l)
+	if [ $count -ne 0 ]; then
+		echo $count >> $RAW
+		total=$(($total + $count))
+	else
+		already_sorted=$(($already_sorted + 1))
+	fi
+	testnumber=$(($testnumber + 1))
 done
 
 echo ""
@@ -26,4 +37,5 @@ sort -n $RAW | cat > $RESULTS
 rm $RAW
 
 echo -e "Best:\\t" $(head -n 1 $RESULTS)
+echo -e "Avg:\\t" $( expr $total / $(expr $numberoftests - $already_sorted))
 echo -e "Worst:\\t" $(tail -n 1 $RESULTS)
