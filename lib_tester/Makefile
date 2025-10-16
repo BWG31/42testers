@@ -8,9 +8,10 @@ CC		=	gcc
 
 CFLAGS	=	-Wall -Wextra -Werror
 
-INC_DIR	=	../
+LIBFT_DIR	= ../../libft
+LIBFT_INC	= ${LIBFT_DIR}/inc#add path here if libft.h is not in the root
 
-LIB		=	../../libft.a
+LIB		=	${LIBFT_DIR}/libft.a
 
 RM		=	rm -f
 
@@ -19,16 +20,19 @@ all:		${NAME}
 ${NAME}:	${LIB} ${OBJS}
 			${CC} ${CFLAGS} $^ ${LIB} -o $@
 
+%.o:		%.c
+			${CC} ${CFLAGS} -I${LIBFT_INC} -c $< -o $@
+
 ${LIB}:		
-			make -C ${INC_DIR}
+			make -C ${LIBFT_DIR}
 
 clean:
 			${RM} ${OBJS}
-			make -C ${INC_DIR} clean
+			make -C ${LIBFT_DIR} clean
 
 fclean:		clean
 			${RM} ${NAME}
-			make -C ${INC_DIR} fclean
+			make -C ${LIBFT_DIR} fclean
 
 re:			fclean all
 
