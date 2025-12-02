@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # API Test Script
-# Usage: ./api-test.sh <method> <service> <endpoint> [-h] [-b]
+# Usage: ./api-test.sh <method> <service> <endpoint> [-h] [-b] [-a]
 # Example: ./api-test.sh GET auth /health
 #          ./api-test.sh POST auth /login -h -b
+#          ./api-test.sh GET user /profile -a
 
 # Colors for output
 RED='\033[0;31m'
@@ -23,7 +24,7 @@ source .env
 
 # Check arguments
 if [ $# -lt 3 ]; then
-    echo -e "${YELLOW}Usage: $0 <method> <service> <endpoint> [-h] [-b]${NC}"
+    echo -e "${YELLOW}Usage: $0 <method> <service> <endpoint> [-h] [-b] [-a] [-c]${NC}"
     echo ""
     echo -e "${CYAN}Methods:${NC}"
     echo "  GET, POST, PUT, PATCH, DELETE"
@@ -37,11 +38,14 @@ if [ $# -lt 3 ]; then
     echo -e "${CYAN}Options:${NC}"
     echo "  -h       - Add custom headers (prompts for key-value pairs)"
     echo "  -b       - Add JSON body (prompts for key-value pairs)"
+    echo "  -a       - Add cookies from cookie jar file (env - COOKIE_JAR)"
+    echo "  -c       - Save cookies to cookie jar file (env - COOKIE_JAR)"
     echo ""
     echo -e "${CYAN}Examples:${NC}"
     echo "  $0 GET auth /health"
     echo "  $0 POST auth /login -h -b"
-    echo "  $0 DELETE user /users/123 -h"
+    echo "  $0 GET user /profile -a"
+    echo "  $0 DELETE user /users/123 -h -a"
     exit 1
 fi
 
@@ -65,6 +69,8 @@ esac
 declare -a CUSTOM_HEADERS
 ADD_HEADERS=false
 ADD_BODY=false
+ADD_AUTH=false
+SAVE_COOKIES=false
 
 # Parse options
 while [ $# -gt 0 ]; do
@@ -77,12 +83,30 @@ while [ $# -gt 0 ]; do
             ADD_BODY=true
             shift
             ;;
+        -a)
+            ADD_AUTH=true
+            shift
+            ;;
+		-c)
+			SAVE_COOKIES=true
+			shift
+			;;
         *)
             echo -e "${RED}Error: Unknown option '$1'${NC}"
             exit 1
             ;;
     esac
 done
+
+# Add access_token cookie if -a flag is present
+# if [ "$ADD_AUTH" = true ]; then
+#     if [ -z "$ACCESS_TOKEN" ]; then
+#         echo -e "${RED}Error: ACCESS_TOKEN environment variable is not set${NC}"
+#         echo -e "${YELLOW}Tip: Set ACCESS_TOKEN in your .env file or run your auth script first${NC}"
+#         exit 1
+#     fi
+#     CUSTOM_HEADERS+=("-H" "Cookie: access_token=$ACCESS_TOKEN")
+# fi
 
 # Prompt for headers if -h flag is present
 if [ "$ADD_HEADERS" = true ]; then
@@ -187,6 +211,16 @@ echo ""
 # Build curl command
 CURL_CMD=(curl -s -w "\n%{http_code}" -X "$METHOD")
 
+if [ "$SAVE_COOKIES" = true ]; then
+	echo "Saving cookies to <$COOKIE_JAR>"
+	CURL_CMD+=(-c "$COOKIE_JAR")
+fi
+
+if [ "$ADD_AUTH" = true ]; then
+	echo "Adding cookies from file: $COOKIE_JAR"
+	CURL_CMD+=(-b "$COOKIE_JAR")
+fi
+
 # Add custom headers
 if [ ${#CUSTOM_HEADERS[@]} -gt 0 ]; then
     CURL_CMD+=("${CUSTOM_HEADERS[@]}")
@@ -201,6 +235,7 @@ fi
 CURL_CMD+=("$URL")
 
 # Execute request
+echo "Executing: $CURL_CMD";
 RESPONSE=$("${CURL_CMD[@]}")
 
 # Extract status code and body
